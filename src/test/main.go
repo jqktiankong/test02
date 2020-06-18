@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
+	"html/template"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"reflect"
 	"runtime"
@@ -219,6 +221,30 @@ func showMessage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func process2(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("E:/go/project/test02/src/test/tmpl.html")
+	t.Execute(w, "Hello Workd!")
+
+}
+
+func process3(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("E:/go/project/test02/src/test/tmpl2.html")
+	rand.Seed(time.Now().Unix())
+	t.Execute(w, rand.Intn(10) > 5)
+}
+
+func process4(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("E:/go/project/test02/src/test/tmpl4.html")
+	daysOfWeek := []string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
+	//daysOfWeek := []string{}
+	t.Execute(w, daysOfWeek)
+}
+
+func process5(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("E:/go/project/test02/src/test/tmpl5.html")
+	t.Execute(w, "hello")
+}
+
 func main() {
 	//hello := HelloHandler{}
 	//world := WorldHandler{}
@@ -239,17 +265,21 @@ func main() {
 	//http.HandleFunc("/hello", log(hello))
 	//http.Handle("/hello", protect(log2(&hello)))
 
-	http.HandleFunc("/headers", headers)
-	http.HandleFunc("/body", body)
-	http.HandleFunc("/process", process)
-	http.HandleFunc("/write", writeExample)
-	http.HandleFunc("/writeheader", writeHeaderExample)
-	http.HandleFunc("/redirect", headerExample)
-	http.HandleFunc("/json", jsonExample)
-	http.HandleFunc("/set_cookie", setCookie)
-	http.HandleFunc("/get_cookie", getCookie)
-	http.HandleFunc("/set_message", setMessage)
-	http.HandleFunc("/show_message", showMessage)
+	//http.HandleFunc("/headers", headers)
+	//http.HandleFunc("/body", body)
+	//http.HandleFunc("/process", process)
+	//http.HandleFunc("/write", writeExample)
+	//http.HandleFunc("/writeheader", writeHeaderExample)
+	//http.HandleFunc("/redirect", headerExample)
+	//http.HandleFunc("/json", jsonExample)
+	//http.HandleFunc("/set_cookie", setCookie)
+	//http.HandleFunc("/get_cookie", getCookie)
+	//http.HandleFunc("/set_message", setMessage)
+	//http.HandleFunc("/show_message", showMessage)
+	http.HandleFunc("/process2", process2)
+	http.HandleFunc("/process3", process3)
+	http.HandleFunc("/process4", process4)
+	http.HandleFunc("/process5", process5)
 
 	server.ListenAndServe()
 }
