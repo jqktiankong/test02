@@ -221,28 +221,78 @@ func showMessage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var mPath = "D:/MyProgram/Go/github/"
+
+//var mPath = "E:/go/project/"
+
 func process2(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("E:/go/project/test02/src/test/tmpl.html")
+	t, _ := template.ParseFiles(mPath + "test02/src/test/tmpl.html")
 	t.Execute(w, "Hello Workd!")
 
 }
 
 func process3(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("E:/go/project/test02/src/test/tmpl2.html")
+	t, _ := template.ParseFiles(mPath + "test02/src/test/tmpl2.html")
 	rand.Seed(time.Now().Unix())
 	t.Execute(w, rand.Intn(10) > 5)
 }
 
 func process4(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("E:/go/project/test02/src/test/tmpl4.html")
+	t, _ := template.ParseFiles(mPath + "test02/src/test/tmpl4.html")
 	daysOfWeek := []string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
 	//daysOfWeek := []string{}
 	t.Execute(w, daysOfWeek)
 }
 
 func process5(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("E:/go/project/test02/src/test/tmpl5.html")
+	t, _ := template.ParseFiles(mPath + "test02/src/test/tmpl5.html")
 	t.Execute(w, "hello")
+}
+
+func process6(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles(mPath+"test02/src/test/t1.html", mPath+"test02/src/test/t2.html")
+	t.Execute(w, "Hello World!")
+}
+
+func formatDate(t time.Time) string {
+	layout := "2020-6-21"
+	return t.Format(layout)
+}
+
+func process7(w http.ResponseWriter, r *http.Request) {
+	funcMap := template.FuncMap{"fdate": formatDate}
+	t := template.New("tmpl7.html").Funcs(funcMap)
+	t, _ = t.ParseFiles(mPath + "test02/src/test/tmpl7.html")
+	t.Execute(w, time.Now())
+}
+
+func process8(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles(mPath + "test02/src/test/tmpl8.html")
+	content := `I asked: <i>"What's up?"</i>`
+	t.Execute(w, content)
+}
+
+func process9(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles(mPath + "test02/src/test/tmpl9.html")
+	t.Execute(w, r.FormValue("comment"))
+}
+
+func form(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles(mPath + "test02/src/test/form.html")
+	t.Execute(w, nil)
+}
+
+func process10(w http.ResponseWriter, r *http.Request) {
+	rand.Seed(time.Now().Unix())
+	var t *template.Template
+	if rand.Intn(10) > 5 {
+		t, _ = template.ParseFiles(mPath+"test02/src/test/layout.html", mPath+"test02/src/test/red_hello.html")
+	} else {
+		//t, _ = template.ParseFiles(mPath + "test02/src/test/layout.html", mPath + "test02/src/test/blue_hello.html")
+		t, _ = template.ParseFiles(mPath + "test02/src/test/layout.html")
+	}
+
+	t.ExecuteTemplate(w, "layout", "")
 }
 
 func main() {
@@ -280,6 +330,12 @@ func main() {
 	http.HandleFunc("/process3", process3)
 	http.HandleFunc("/process4", process4)
 	http.HandleFunc("/process5", process5)
+	http.HandleFunc("/process6", process6)
+	http.HandleFunc("/process7", process7)
+	http.HandleFunc("/process8", process8)
+	http.HandleFunc("/process9", process9)
+	http.HandleFunc("/form", form)
+	http.HandleFunc("/process10", process10)
 
 	server.ListenAndServe()
 }
