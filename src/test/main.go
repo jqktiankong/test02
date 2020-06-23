@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"html/template"
@@ -112,20 +111,20 @@ func headerExample(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(302)
 }
 
-type Post struct {
-	User    string
-	Threads []string
-}
-
-func jsonExample(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	post := &Post{
-		User:    "Sau Sheong",
-		Threads: []string{"first", "second", "third"},
-	}
-	json, _ := json.Marshal(post)
-	w.Write(json)
-}
+//type Post struct {
+//	User    string
+//	Threads []string
+//}
+//
+//func jsonExample(w http.ResponseWriter, r *http.Request) {
+//	w.Header().Set("Content-Type", "application/json")
+//	post := &Post{
+//		User:    "Sau Sheong",
+//		Threads: []string{"first", "second", "third"},
+//	}
+//	json, _ := json.Marshal(post)
+//	w.Write(json)
+//}
 
 func setCookie(w http.ResponseWriter, r *http.Request) {
 	c1 := http.Cookie{
@@ -295,47 +294,87 @@ func process10(w http.ResponseWriter, r *http.Request) {
 	t.ExecuteTemplate(w, "layout", "")
 }
 
+//func main() {
+//	//hello := HelloHandler{}
+//	//world := WorldHandler{}
+//
+//	//mux:= httprouter.New()
+//	//mux.GET("/hello/:name", hello)
+//
+//	server := http.Server{
+//		Addr: "127.0.0.1:8080",
+//	}
+//
+//	//http.Handle("/hello", &hello)
+//	//http.Handle("/world", &world)
+//
+//	//http.HandleFunc("/hello", hello)
+//	//http.HandleFunc("/world", world)
+//
+//	//http.HandleFunc("/hello", log(hello))
+//	//http.Handle("/hello", protect(log2(&hello)))
+//
+//	//http.HandleFunc("/headers", headers)
+//	//http.HandleFunc("/body", body)
+//	//http.HandleFunc("/process", process)
+//	//http.HandleFunc("/write", writeExample)
+//	//http.HandleFunc("/writeheader", writeHeaderExample)
+//	//http.HandleFunc("/redirect", headerExample)
+//	//http.HandleFunc("/json", jsonExample)
+//	//http.HandleFunc("/set_cookie", setCookie)
+//	//http.HandleFunc("/get_cookie", getCookie)
+//	//http.HandleFunc("/set_message", setMessage)
+//	//http.HandleFunc("/show_message", showMessage)
+//	http.HandleFunc("/process2", process2)
+//	http.HandleFunc("/process3", process3)
+//	http.HandleFunc("/process4", process4)
+//	http.HandleFunc("/process5", process5)
+//	http.HandleFunc("/process6", process6)
+//	http.HandleFunc("/process7", process7)
+//	http.HandleFunc("/process8", process8)
+//	http.HandleFunc("/process9", process9)
+//	http.HandleFunc("/form", form)
+//	http.HandleFunc("/process10", process10)
+//
+//	server.ListenAndServe()
+//}
+
+type Post struct {
+	Id      int
+	Content string
+	Author  string
+}
+
+var PostById map[int]*Post
+var PostsByAuthor map[string][]*Post
+
+func store(post Post) {
+	PostById[post.Id] = &post
+	PostsByAuthor[post.Author] = append(PostsByAuthor[post.Author], &post)
+}
+
 func main() {
-	//hello := HelloHandler{}
-	//world := WorldHandler{}
+	PostById = make(map[int]*Post)
+	PostsByAuthor = make(map[string][]*Post)
 
-	//mux:= httprouter.New()
-	//mux.GET("/hello/:name", hello)
+	post1 := Post{Id: 1, Content: "Hello World!", Author: "Sau Sheong"}
+	post2 := Post{Id: 2, Content: "Bonjour Monde!", Author: "Pierre"}
+	post3 := Post{Id: 3, Content: "Hola Mundo!", Author: "Pedro"}
+	post4 := Post{Id: 4, Content: "Greetings Earthlings", Author: "Sau Sheong"}
 
-	server := http.Server{
-		Addr: "127.0.0.1:8080",
+	store(post1)
+	store(post2)
+	store(post3)
+	store(post4)
+
+	fmt.Println(PostById[1])
+	fmt.Println(PostById[2])
+
+	for _, post := range PostsByAuthor["Sau Sheong"] {
+		fmt.Println(post)
 	}
 
-	//http.Handle("/hello", &hello)
-	//http.Handle("/world", &world)
-
-	//http.HandleFunc("/hello", hello)
-	//http.HandleFunc("/world", world)
-
-	//http.HandleFunc("/hello", log(hello))
-	//http.Handle("/hello", protect(log2(&hello)))
-
-	//http.HandleFunc("/headers", headers)
-	//http.HandleFunc("/body", body)
-	//http.HandleFunc("/process", process)
-	//http.HandleFunc("/write", writeExample)
-	//http.HandleFunc("/writeheader", writeHeaderExample)
-	//http.HandleFunc("/redirect", headerExample)
-	//http.HandleFunc("/json", jsonExample)
-	//http.HandleFunc("/set_cookie", setCookie)
-	//http.HandleFunc("/get_cookie", getCookie)
-	//http.HandleFunc("/set_message", setMessage)
-	//http.HandleFunc("/show_message", showMessage)
-	http.HandleFunc("/process2", process2)
-	http.HandleFunc("/process3", process3)
-	http.HandleFunc("/process4", process4)
-	http.HandleFunc("/process5", process5)
-	http.HandleFunc("/process6", process6)
-	http.HandleFunc("/process7", process7)
-	http.HandleFunc("/process8", process8)
-	http.HandleFunc("/process9", process9)
-	http.HandleFunc("/form", form)
-	http.HandleFunc("/process10", process10)
-
-	server.ListenAndServe()
+	for _, post := range PostsByAuthor["Pedro"] {
+		fmt.Println(post)
+	}
 }
