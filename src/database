@@ -1,3 +1,5 @@
+create database gwp;
+
 CREATE TABLE IF NOT EXISTS posts(
    id INT UNSIGNED AUTO_INCREMENT,
    content TEXT,

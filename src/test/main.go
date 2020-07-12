@@ -455,8 +455,9 @@ func init() {
 }
 
 func Posts(limit int) (posts []Post, err error) {
-	rows, err := Db.Query("select id, content, author from posts limit $1", limit)
+	rows, err := Db.Query("select id, content, author from posts limit ?", limit)
 	if err != nil {
+		fmt.Println("err = " + err.Error())
 		return
 	}
 
@@ -475,29 +476,37 @@ func Posts(limit int) (posts []Post, err error) {
 
 func GetPost(id int) (post Post, err error) {
 	post = Post{}
-	err = Db.QueryRow("select id ,content, author from posts where id = $1", id).Scan(&post.Id, &post.Content, &post.Author)
+	err = Db.QueryRow("select id ,content, author from posts where id = ?", id).Scan(&post.Id, &post.Content, &post.Author)
+	if err != nil {
+		fmt.Println("err = " + err.Error())
+	}
 	return
 }
 
 func (post *Post) Create() (err error) {
-	statement := "insert into posts (content, author) values ($1, $2);"
+	statement := "insert into posts (content, author) values (? , ?);"
 	stmt, err := Db.Prepare(statement)
 	if err != nil {
 		fmt.Println("err = " + err.Error())
 		return
 	}
 	defer stmt.Close()
-	err = stmt.QueryRow(post.Content, post.Author).Scan(&post.Id)
+	res, err := stmt.Exec(post.Content, post.Author)
+	id, err := res.LastInsertId()
+	post.Id = int(id)
 	return
 }
 
 func (post *Post) Update() (err error) {
-	_, err = Db.Exec("update posts set content = $2, author = $3 where id = $1", post.Id, post.Content, post.Author)
+	_, err = Db.Exec("update posts set content = ?, author = ? where id = ?", post.Content, post.Author, post.Id)
+	if err != nil {
+		fmt.Println("err = " + err.Error())
+	}
 	return
 }
 
 func (post *Post) Delete() (err error) {
-	_, err = Db.Exec("delete from posts where id = $1", post.Id)
+	_, err = Db.Exec("delete from posts where id = ?", post.Id)
 	return
 }
 
@@ -562,15 +571,15 @@ func main() {
 	post.Create()
 	fmt.Println(post)
 
-	//readPost, _ := GetPost(post.Id)
-	//fmt.Println(readPost)
-	//
-	//readPost.Content = "Bonjour Monde!"
-	//readPost.Author = "Pierre"
-	//readPost.Update()
-	//
-	//posts, _ := Posts(0)
-	//fmt.Println(posts)
-	//
-	//readPost.Delete()
+	readPost, _ := GetPost(post.Id)
+	fmt.Println(readPost)
+
+	readPost.Content = "Bonjour Monde!"
+	readPost.Author = "Pierre"
+	readPost.Update()
+
+	posts, _ := Posts(10)
+	fmt.Println(posts)
+
+	readPost.Delete()
 }
