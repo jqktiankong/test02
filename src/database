@@ -6,3 +6,12 @@ CREATE TABLE IF NOT EXISTS posts(
    author VARCHAR(40),
    PRIMARY KEY (id)
    )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS comments(
+   id INT UNSIGNED AUTO_INCREMENT,
+   post_id INT UNSIGNED,
+   content TEXT,
+   author VARCHAR(224),
+   PRIMARY KEY (id),
+   Foreign Key (post_id) references posts(id)
+   )ENGINE=InnoDB DEFAULT CHARSET=utf8;
