@@ -90,4 +90,5 @@ func main() {
 	fmt.Println(readPost)
 	fmt.Println(readPost.Comments)
 	fmt.Println(readPost.Comments[0].Post)
+
 }
