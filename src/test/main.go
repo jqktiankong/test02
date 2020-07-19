@@ -1,93 +1,52 @@
 package main
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"time"
 )
 
 type Post struct {
-	Id       int
-	Content  string
-	Author   string
-	Comments []Comment
+	Id        int
+	Content   string
+	Author    string `sql:"not null"`
+	Comments  []Comment
+	CreatedAt time.Time
 }
 
 type Comment struct {
-	Id      int
-	PostId  int
-	Content string
-	Author  string
-	Post    *Post
+	Id        int
+	Content   string
+	Author    string `sql:"not null"`
+	PostId    int    `sql:"index"`
+	CreatedAt time.Time
 }
 
-var Db *sql.DB
+var Db *gorm.DB
 
 func init() {
 	var err error
-	Db, err = sql.Open("mysql", "myuser:mypass@(127.0.0.1:3306)/gwp?charset=utf8")
+	Db, err = gorm.Open("mysql", "myuser:mypass@(127.0.0.1:3306)/gwp?charset=utf8")
 	if err != nil {
 		panic(err)
 	}
-}
-
-func (comment *Comment) Create() (err error) {
-	if comment.Post == nil {
-		err = errors.New("Post not found")
-		return
-	}
-	_, err = Db.Exec("insert into comments (content, author, post_id)"+
-		" values (?, ?, ?);", comment.Content, comment.Author, comment.Post.Id)
-	return
-}
-
-func GetPost(id int) (post Post, err error) {
-	post = Post{}
-	post.Comments = []Comment{}
-	err = Db.QueryRow("select id, content, author from posts where id = "+
-		"?", id).Scan(&post.Id, &post.Content, &post.Author)
-
-	rows, err := Db.Query("select id, post_id, content, author from comments")
-	if err != nil {
-		return
-	}
-	for rows.Next() {
-		comment := Comment{Post: &post}
-		err = rows.Scan(&comment.Id, &comment.PostId, &comment.Content, &comment.Author)
-		if err != nil {
-			return
-		}
-
-		if comment.PostId == post.Id {
-			post.Comments = append(post.Comments, comment)
-		}
-	}
-	rows.Close()
-	return
-}
-
-func (post *Post) Create() (err error) {
-	result, err := Db.Exec("insert into posts (content, author) values (?, ?);",
-		post.Content, post.Author)
-
-	a, _ := result.LastInsertId()
-	post.Id = int(a)
-	return
+	Db.AutoMigrate(&Post{}, &Comment{})
 }
 
 func main() {
 	post := Post{Content: "Hello World!", Author: "Sau Sheong"}
-	post.Create()
+	fmt.Println(post)
 
-	comment := Comment{Content: "Good post!", Author: "Joe", Post: &post}
-	err := comment.Create()
-	if err != nil {
-		fmt.Println("err = " + err.Error())
-	}
-	readPost, _ := GetPost(post.Id)
+	Db.Create(&post)
+	fmt.Println(post)
 
-	fmt.Println(readPost)
-	fmt.Println(readPost.Comments)
-	fmt.Println(readPost.Comments[0].Post)
+	comment := Comment{Content: "Good post!", Author: "Joe"}
+	Db.Model(&post).Association("Comments").Append(comment)
+
+	var readPost Post
+	Db.Where("author = ?", "Sau Sheong").First(&readPost)
+	var comments []Comment
+	Db.Model(&readPost).Related(&comments)
+	fmt.Println(comments[0])
 }
